@@ -23,7 +23,7 @@ ship_y = screen_height // 2
 rotation_speed = 1
 
 # Количество пикселей, на которое корабль сдвигается по X за одну итерацию
-move_increment = 0.01
+move_increment = 1
 
 # Параметры лазера
 laser_width = 1
@@ -86,11 +86,14 @@ while running:
         if distance < 100:
             # Рисование лазера
             pygame.draw.line(screen, laser_color, ship_nose, (asteroid_x, asteroid_y), laser_width)
+
+            # Удаление астероида
             asteroids.remove(asteroid)
 
 
     # Обновление экрана
     pygame.display.flip()
+    pygame.time.delay(50)
 
 # Завершение программы
 pygame.quit()
