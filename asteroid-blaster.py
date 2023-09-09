@@ -3,7 +3,7 @@ import math
 import random
 
 pg.init()
-pg.display.set_caption("Космический корабль")
+pg.display.set_caption("Asteroid Blaster")
 
 RES = WIDTH, HEIGHT = 800, 600
 FPS = 30
@@ -50,17 +50,26 @@ while running:
 
     # Очистка экрана
     screen.fill('black')
+    current_time = pg.time.get_ticks()
 
 
     # Рисование и позиционирование космического корабля
-    ship_nose = (ship_x + ship_length, ship_y + ship_width // 2)
+    ship_middle_y = ship_y + ship_width // 2
+    ship_nose = (ship_x + ship_length, ship_middle_y)
+    ship_back = (ship_x, ship_middle_y)
     ship_points = [
         (ship_x, ship_y),
         (ship_x, ship_y + ship_width),
         ship_nose
     ]
-
     pg.draw.polygon(screen, 'white', ship_points, 1)
+
+    # рисование заряда батареи
+    if (current_time - last_shot_time) >= laser_cooldown:
+        battery_fill = 1
+    else:
+        battery_fill = (current_time - last_shot_time) / laser_cooldown
+    pg.draw.line(screen, laser_color, ship_back, (ship_x + battery_fill * ship_length, ship_middle_y), laser_width)
 
     # Расчет новых координат корабля
     ship_x += move_increment
@@ -77,14 +86,13 @@ while running:
         pg.draw.circle(screen, 'darkgray', (asteroid_x, asteroid_y), asteroid_radius, 1)
 
     # Рисование лазера и проверка столкновения с астероидами
-    current_time = pg.time.get_ticks()
     for asteroid in asteroids:
         asteroid_x, asteroid_y, asteroid_radius = asteroid
 
         # Проверка, расстояние от корабля до астероида
         distance = math.hypot(asteroid_x - ship_x, asteroid_y - ship_y)
         if distance < 100:
-            if current_time - last_shot_time > laser_cooldown:
+            if battery_fill == 1:
                 # Рисование лазера
                 pg.draw.line(screen, laser_color, ship_nose, (asteroid_x, asteroid_y), laser_width)
 
@@ -93,6 +101,7 @@ while running:
 
                 # Обновление времени последнего выстрела
                 last_shot_time = current_time
+                battery_fill = 0
 
     # Обновление экрана
     pg.display.flip()
