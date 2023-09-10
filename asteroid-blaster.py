@@ -14,6 +14,7 @@ clock = pg.time.Clock()
 # Параметры космического корабля
 ship_width = 20
 ship_length = 30
+ship_armor = 1
 
 # Начальные координаты корабля
 ship_x = 0
@@ -29,7 +30,7 @@ laser_cooldown = 300
 last_shot_time = 0
 
 # Генерация астероидов
-asteroid_radius_range = (5, 10)
+asteroid_radius_range = (3, 10)
 asteroid_number = 100
 asteroids = []
 for _ in range(asteroid_number):
@@ -62,7 +63,7 @@ while running:
         (ship_x, ship_y + ship_width),
         ship_nose
     ]
-    pg.draw.polygon(screen, 'white', ship_points, 1)
+    pg.draw.polygon(screen, 'white', ship_points, ship_armor)
 
     # рисование заряда батареи
     if (current_time - last_shot_time) >= laser_cooldown:
