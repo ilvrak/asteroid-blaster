@@ -90,7 +90,7 @@ while running:
         asteroid_x, asteroid_y, asteroid_radius = asteroid
 
         # Проверка, расстояние от корабля до астероида
-        distance = math.hypot(asteroid_x - ship_x, asteroid_y - ship_y)
+        distance = math.hypot(asteroid_x - ship_nose[0], asteroid_y - ship_nose[1])
         if distance < 100:
             if battery_fill == 1:
                 # Рисование лазера
