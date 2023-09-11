@@ -51,35 +51,32 @@ class Laser:
     def __init__(self):
         self.width = 1
         self.color = 'red'
-        self.energy_use = 10
+        self.energy_use = 20
         self.range = 100
 
     def scan(self, asteroids):
         for asteroid in asteroids:
             distance = math.hypot(asteroid.x - ship.nose[0], asteroid.y - ship.nose[1])
             if distance < self.range:
-                self.shoot(asteroid)
+                if ship.battery.charge >= ship.laser.energy_use:
+                    self.shoot(asteroid)
 
     def shoot(self, target):
         pg.draw.line(screen, self.color, ship.nose, (target.x, target.y), self.width)
         asteroids.remove(target)
+        ship.battery.charge -= ship.laser.energy_use
 
 
 class Battery:
     def __init__(self):
         self.capacity = 100
-        self.fill = 1
+        self.charge = self.capacity
         self.charge_speed = 1
 
     def update(self):
-        current_time = pg.time.get_ticks()
-        if (current_time - self.last_shot_time) >= self.cooldown:
-            self.battery_fill = 1
-        else:
-            self.battery_fill = (current_time - self.last_shot_time) / self.cooldown
-
-    def draw(self):
-        pg.draw.line(screen, ship.laser.color, ship.back, (self.x + self.fill * ship.length, ship.y))
+        if self.charge < self.capacity:
+            self.charge += self.charge_speed
+        pg.draw.line(screen, ship.laser.color, ship.back, (ship.x + self.charge * ship.length / self.capacity, ship.y))
 
 
 class Asteroid:
@@ -129,6 +126,7 @@ def draw_screen():
         asteroid.draw()
 
     ship.update()
+    ship.battery.update()
     ship.laser.scan(asteroids)
 
     pg.display.flip()
