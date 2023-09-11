@@ -19,29 +19,32 @@ class Ship:
         self.x = 0
         self.y = HEIGHT // 2
         self.move_increment = 1
+        self.armor = 1
         self.battery = Battery()
         self.laser = Laser()
 
     def update(self):
         self.x += self.move_increment
         self.y = HEIGHT // 2 - math.sin(math.radians(self.x)) * HEIGHT // 8
-        self.middle_y = self.y + self.width // 2
-        self.nose = (self.x + self.length, self.middle_y)
-        self.back = (self.x, self.middle_y)
-        self.left_wing = (self.x, self.y)
-        self.right_wing = (self.x, self.y + self.width)
-
-    def update_systems(self):
-        self.battery.update(self.back, self.nose)
-        self.laser.update()
-
-    def draw(self):
-        points = [
+        self.back = (self.x, self.y)
+        self.nose = (self.x + self.length, self.y)
+        self.left_wing = (self.x, self.y - self.width // 2)
+        self.right_wing = (self.x, self.y + self.width // 2)
+        self.points = [
             self.left_wing,
             self.right_wing,
             self.nose
         ]
-        pg.draw.polygon(screen, 'white', points, 1)
+        pg.draw.polygon(screen, 'white', self.points, self.armor)
+
+    def update_systems(self):
+        self.battery.update(self.back, self.nose)
+
+    def shoot_laser(self):
+        self.laser.shoot()
+
+    def collide(self):
+        self.armor -= 1
 
 
 class Laser:
@@ -51,20 +54,15 @@ class Laser:
         self.energy_use = 10
         self.range = 100
 
-    def update(self):
-        pass
-
-    def draw(self, ship):
-        ship_nose = (ship.x + ship.length, ship.y + ship.width // 2)
+    def scan(self, asteroids):
         for asteroid in asteroids:
-            asteroid_x, asteroid_y, asteroid_radius = asteroid
-            distance = math.hypot(asteroid_x - ship.x, asteroid_y - ship.y)
-            if distance < 100:
-                if self.battery_fill == 1:
-                    pg.draw.line(screen, self.color, ship_nose, (asteroid_x, asteroid_y), self.width)
-                    asteroids.remove(asteroid)
-                    self.last_shot_time = pg.time.get_ticks()
-                    self.battery_fill = 0
+            distance = math.hypot(asteroid.x - ship.nose[0], asteroid.y - ship.nose[1])
+            if distance < self.range:
+                self.shoot(asteroid)
+
+    def shoot(self, target):
+        pg.draw.line(screen, self.color, ship.nose, (target.x, target.y), self.width)
+        asteroids.remove(target)
 
 
 class Battery:
@@ -81,7 +79,7 @@ class Battery:
             self.battery_fill = (current_time - self.last_shot_time) / self.cooldown
 
     def draw(self):
-        pg.draw.line(screen, laser.color, ship.back, (self.x + self.fill * self.length, ship.middle_y))
+        pg.draw.line(screen, ship.laser.color, ship.back, (self.x + self.fill * ship.length, ship.y))
 
 
 class Asteroid:
@@ -124,35 +122,32 @@ asteroids = Asteroid.generate(100)
 ship = Ship(20, 30)
 
 
-def draw_window():
-        # Очистка экрана
-        screen.fill('black')
+def draw_screen():
+    screen.fill('black')
 
-        # Отрисовка астероидов
-        for asteroid in asteroids:
-            asteroid.draw()
+    for asteroid in asteroids:
+        asteroid.draw()
 
-        # # Обновление и отрисовка корабля
-        ship.update()
-        ship.draw()
+    ship.update()
+    ship.laser.scan(asteroids)
 
-        # Обновление экрана
-        pg.display.flip()
-        clock.tick(FPS)
+    pg.display.flip()
 
 
 def main():
-    # Основной цикл программы
     running = True
     while running:
-        # Обработка событий
+        clock.tick(FPS)
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
 
-        draw_window()
+        if ship.x > WIDTH:
+            running = False
 
-    # Завершение программы
+        draw_screen()
+
     pg.quit()
 
 if __name__ == "__main__":
