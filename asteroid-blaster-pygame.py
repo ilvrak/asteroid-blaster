@@ -2,15 +2,54 @@ import math
 import random
 
 import pygame as pg
+import pygame.freetype as ft
+
+import sys
 
 pg.init()
 pg.display.set_caption("Asteroid Blaster")
 
 RES = WIDTH, HEIGHT = 800, 600
+FONT_SIZE = 40
 MIDDLE_Y = HEIGHT // 2
 FPS = 30
 screen = pg.display.set_mode(RES)
 clock = pg.time.Clock()
+
+
+class App:
+    def __init__(self):
+        pg.init()
+        pg.display.set_caption("Asteroid Blaster")
+
+        self.screen = pg.display.set_mode(RES)
+        self.clock = pg.time.Clock()
+        self.font = ft.SysFont('Verdana', FONT_SIZE)
+        self.dt = 0.0
+
+    def update(self):
+        pg.display.flip()
+        self.dt = self.clock.tick() * 0.001
+
+    def draw(self):
+        self.screen.fill('black')
+        self.draw_fps()
+
+    def draw_fps(self):
+        fps = f'{self.clock.get_fps() :.0f} FPS'
+        self.font.render_to(self.screen, (0, 0), text=fps, fgcolor='green', bgcolor='black')
+
+    def check_events(self):
+        for e in pg.event.get():
+            if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
+                pg.quit()
+                sys.exit()
+
+    def run(self):
+        while True:
+            self.check_events()
+            self.update()
+            self.draw()
 
 
 class Ship:
@@ -89,6 +128,10 @@ class Battery:
         if self.charge < self.capacity:
             self.charge += self.charge_speed
         pg.draw.line(screen, self.ship.laser.color, self.ship.back, (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
+
+
+class Armor:
+    pass
 
 
 class Asteroid:
