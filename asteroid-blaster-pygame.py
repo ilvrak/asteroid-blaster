@@ -132,9 +132,9 @@ asteroids = Asteroid.generate(200)
 
 # Создание кораблей
 ships = []
-ships.append(Ship(20, 30))
-ships.append(Ship(20, 30, -40, MIDDLE_Y - 30))
-ships.append(Ship(20, 30, -50, MIDDLE_Y + 30))
+ships.append(Ship(20, 30, -10))
+ships.append(Ship(20, 30, -50, MIDDLE_Y - 30))
+ships.append(Ship(20, 30, -60, MIDDLE_Y + 30))
 
 
 class App:
