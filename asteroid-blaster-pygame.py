@@ -17,41 +17,6 @@ screen = pg.display.set_mode(RES)
 clock = pg.time.Clock()
 
 
-class App:
-    def __init__(self):
-        pg.init()
-        pg.display.set_caption("Asteroid Blaster")
-
-        self.screen = pg.display.set_mode(RES)
-        self.clock = pg.time.Clock()
-        self.font = ft.SysFont('Verdana', FONT_SIZE)
-        self.dt = 0.0
-
-    def update(self):
-        pg.display.flip()
-        self.dt = self.clock.tick() * 0.001
-
-    def draw(self):
-        self.screen.fill('black')
-        self.draw_fps()
-
-    def draw_fps(self):
-        fps = f'{self.clock.get_fps() :.0f} FPS'
-        self.font.render_to(self.screen, (0, 0), text=fps, fgcolor='green', bgcolor='black')
-
-    def check_events(self):
-        for e in pg.event.get():
-            if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
-                pg.quit()
-                sys.exit()
-
-    def run(self):
-        while True:
-            self.check_events()
-            self.update()
-            self.draw()
-
-
 class Ship:
     def __init__(self, width, length, x=0, y=MIDDLE_Y, frequency=1):
         self.width = width
@@ -170,6 +135,41 @@ ships = []
 ships.append(Ship(20, 30))
 ships.append(Ship(20, 30, -40, MIDDLE_Y - 30))
 ships.append(Ship(20, 30, -50, MIDDLE_Y + 30))
+
+
+class App:
+    def __init__(self):
+        pg.init()
+        pg.display.set_caption("Asteroid Blaster")
+
+        self.screen = pg.display.set_mode(RES)
+        self.clock = pg.time.Clock()
+        self.font = ft.SysFont('Verdana', FONT_SIZE)
+        self.dt = 0.0
+
+    def update(self):
+        pg.display.flip()
+        self.dt = self.clock.tick() * 0.001
+
+    def draw(self):
+        self.screen.fill('black')
+        self.draw_fps()
+
+    def draw_fps(self):
+        fps = f'{self.clock.get_fps() :.0f} FPS'
+        self.font.render_to(self.screen, (0, 0), text=fps, fgcolor='green', bgcolor='black')
+
+    def check_events(self):
+        for e in pg.event.get():
+            if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
+                pg.quit()
+                sys.exit()
+
+    def run(self):
+        while True:
+            self.check_events()
+            self.update()
+            self.draw()
 
 
 def draw_screen():
