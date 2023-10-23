@@ -1,24 +1,13 @@
 import math
 import random
-
 import pygame as pg
-import pygame.freetype as ft
 
-import sys
-
-pg.init()
-pg.display.set_caption("Asteroid Blaster")
-
-RES = WIDTH, HEIGHT = 800, 600
-FONT_SIZE = 40
-MIDDLE_Y = HEIGHT // 2
-FPS = 30
-screen = pg.display.set_mode(RES)
-clock = pg.time.Clock()
+vec2 = pg.math.Vector2
 
 
 class Ship:
-    def __init__(self, width, length, x=0, y=MIDDLE_Y, frequency=1):
+    def __init__(self, game, width, length, x=0, y=MIDDLE_Y, frequency=1):
+        self.game = game
         self.width = width
         self.length = length
         self.x = x
@@ -31,9 +20,9 @@ class Ship:
         self.laser = Laser(self)
         self.rect = pg.Rect(self.x, self.y - self.width // 2, self.length, self.width)
 
-    def update(self):
+    def update(self, game):
         self.x += self.move_increment
-        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * HEIGHT // 8
+        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * self.game.HEIGHT // 8
         self.back = (self.x, self.y)
         self.nose = (self.x + self.length, self.y)
         self.left_wing = (self.x, self.y - self.width // 2)
@@ -44,7 +33,7 @@ class Ship:
             self.right_wing,
             self.nose
         ]
-        pg.draw.polygon(screen, 'white', self.points, self.armor)
+        pg.draw.polygon(self.game.screen, 'white', self.points, self.armor)
         # pg.draw.rect(screen, 'magenta', self.rect, 1)
 
     def check_collision(self, ships, asteroids):
@@ -77,8 +66,8 @@ class Laser:
             self.shoot(nearest_asteroid)
 
     def shoot(self, target):
-        pg.draw.line(screen, self.color, self.ship.nose, (target.x, target.y), self.width)
-        asteroids.remove(target)
+        pg.draw.line(self.game.screen, self.color, self.ship.nose, (target.x, target.y), self.width)
+        self.game.asteroids.remove(target)
         self.ship.battery.charge -= self.ship.laser.energy_use
 
 
@@ -92,7 +81,7 @@ class Battery:
     def update(self):
         if self.charge < self.capacity:
             self.charge += self.charge_speed
-        pg.draw.line(screen, self.ship.laser.color, self.ship.back, (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
+        pg.draw.line(self.game.screen, self.ship.laser.color, self.ship.back, (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
 
 
 class Armor:
@@ -125,84 +114,3 @@ class Asteroid:
             asteroid = cls(asteroid_x, asteroid_y, asteroid_radius)
             asteroids.append(asteroid)
         return asteroids
-
-
-# Генерация астероидов
-asteroids = Asteroid.generate(200)
-
-# Создание кораблей
-ships = []
-ships.append(Ship(20, 30, -10))
-ships.append(Ship(20, 30, -50, MIDDLE_Y - 30))
-ships.append(Ship(20, 30, -60, MIDDLE_Y + 30))
-
-
-class App:
-    def __init__(self):
-        pg.init()
-        pg.display.set_caption("Asteroid Blaster")
-
-        self.screen = pg.display.set_mode(RES)
-        self.clock = pg.time.Clock()
-        self.font = ft.SysFont('Verdana', FONT_SIZE)
-        self.dt = 0.0
-
-    def update(self):
-        pg.display.flip()
-        self.dt = self.clock.tick() * 0.001
-
-    def draw(self):
-        self.screen.fill('black')
-        self.draw_fps()
-
-    def draw_fps(self):
-        fps = f'{self.clock.get_fps() :.0f} FPS'
-        self.font.render_to(self.screen, (0, 0), text=fps, fgcolor='green', bgcolor='black')
-
-    def check_events(self):
-        for e in pg.event.get():
-            if e.type == pg.QUIT or (e.type == pg.KEYDOWN and e.key == pg.K_ESCAPE):
-                pg.quit()
-                sys.exit()
-
-    def run(self):
-        while True:
-            self.check_events()
-            self.update()
-            self.draw()
-
-
-def draw_screen():
-    screen.fill('black')
-
-    for asteroid in asteroids:
-        asteroid.draw()
-
-    for ship in ships:
-        ship.update()
-        ship.check_collision(ships, asteroids)
-        ship.laser.scan(asteroids)
-        ship.battery.update()
-
-    pg.display.flip()
-
-
-def main():
-    running = True
-    while running:
-        clock.tick(FPS)
-
-        for event in pg.event.get():
-            if event.type == pg.QUIT:
-                running = False
-
-        if len(ships) == 0 or ships[-1].x > WIDTH:
-            running = False
-
-        draw_screen()
-
-    pg.quit()
-
-
-if __name__ == "__main__":
-    main()
