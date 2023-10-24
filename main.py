@@ -3,9 +3,11 @@ import sys
 import pygame as pg
 import pygame.freetype as ft
 
-from game_objects import Ship, Asteroid
+from classes import Ship, Asteroid
 from settings import RES, FONT_SIZE, MIDDLE_Y, WIDTH
 
+
+# Game - (Space - (Asteroids - (Asteroid), Ships - (Ship - (Laser, Battery))), Menu)
 
 class Game:
     def __init__(self):
@@ -52,6 +54,7 @@ class Game:
                 sys.exit()
 
     def run(self):
+        self.new_game()
         running = True
         while running:
             self.check_events()

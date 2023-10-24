@@ -22,9 +22,9 @@ class Ship:
         self.laser = Laser(self)
         self.rect = pg.Rect(self.x, self.y - self.width // 2, self.length, self.width)
 
-    def update(self, game):
+    def update(self):
         self.x += self.move_increment
-        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * self.game.HEIGHT // 8
+        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * HEIGHT // 8
         self.back = (self.x, self.y)
         self.nose = (self.x + self.length, self.y)
         self.left_wing = (self.x, self.y - self.width // 2)
@@ -87,12 +87,9 @@ class Battery:
                      (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
 
 
-class Armor:
-    pass
-
-
 class Asteroid:
-    def __init__(self, x, y, radius):
+    def __init__(self, game, x, y, radius):
+        self.game = game
         self.color = 'darkgray'
         self.x = x
         self.y = y
@@ -100,7 +97,7 @@ class Asteroid:
         self.rect = pg.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
 
     def draw(self):
-        pg.draw.circle(self.screen, self.color, (self.x, self.y), self.radius, 1)
+        pg.draw.circle(self.game.screen, self.color, (self.x, self.y), self.radius, 1)
         # pg.draw.rect(screen, 'magenta', self.rect, 1)
 
     def hitted(self):
@@ -117,3 +114,58 @@ class Asteroid:
             asteroid = cls(asteroid_x, asteroid_y, asteroid_radius)
             asteroids.append(asteroid)
         return asteroids
+
+
+class Space:
+    def __init__(self, game):
+        self.game = game
+
+    def is_game_over(self):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+
+class Asteroids:
+    def __init__(self, space):
+        self.space = space
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+
+class Ships:
+    def __init__(self, space):
+        self.space = space
+        self.ships = []
+        self.reach = False
+
+    def append_ship(self, type, pos):
+        self.ships.append(Ship())
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
+
+    def check_ships_reach(self):
+        pass
+
+
+class Menu:
+    def __init__(self, game):
+        self.game = game
+
+    def update(self):
+        pass
+
+    def draw(self):
+        pass
