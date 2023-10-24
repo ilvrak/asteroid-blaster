@@ -1,3 +1,5 @@
+from settings import MIDDLE_Y, WIDTH, HEIGHT
+
 import math
 import random
 import pygame as pg
@@ -81,7 +83,8 @@ class Battery:
     def update(self):
         if self.charge < self.capacity:
             self.charge += self.charge_speed
-        pg.draw.line(self.game.screen, self.ship.laser.color, self.ship.back, (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
+        pg.draw.line(self.game.screen, self.ship.laser.color, self.ship.back,
+                     (self.ship.x + self.charge * self.ship.length / self.capacity, self.ship.y))
 
 
 class Armor:
@@ -97,7 +100,7 @@ class Asteroid:
         self.rect = pg.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
 
     def draw(self):
-        pg.draw.circle(screen, self.color, (self.x, self.y), self.radius, 1)
+        pg.draw.circle(self.screen, self.color, (self.x, self.y), self.radius, 1)
         # pg.draw.rect(screen, 'magenta', self.rect, 1)
 
     def hitted(self):

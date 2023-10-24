@@ -1,26 +1,21 @@
-
 import sys
 
 import pygame as pg
 import pygame.freetype as ft
 
-from game_objects import *
+from game_objects import Ship, Asteroid
+from settings import RES, FONT_SIZE, MIDDLE_Y, WIDTH
 
 
 class Game:
     def __init__(self):
 
-        self.RES = self.WIDTH, self.HEIGHT = 800, 600
-        self.FONT_SIZE = 40
-        self.MIDDLE_Y = self.HEIGHT // 2
-        self.FPS = 30
-
         pg.init()
         pg.display.set_caption("Asteroid Blaster")
 
-        self.screen = pg.display.set_mode(self.RES)
+        self.screen = pg.display.set_mode(RES)
         self.clock = pg.time.Clock()
-        self.font = ft.SysFont('Verdana', self.FONT_SIZE)
+        self.font = ft.SysFont('Verdana', FONT_SIZE)
 
         self.new_game()
 
@@ -30,9 +25,9 @@ class Game:
 
         # Создание кораблей
         self.ships = []
-        self.ships.append(Ship(20, 30, -10))
-        self.ships.append(Ship(20, 30, -50, self.MIDDLE_Y - 30))
-        self.ships.append(Ship(20, 30, -60, self.MIDDLE_Y + 30))
+        self.ships.append(Ship(self, 20, 30, -10))
+        self.ships.append(Ship(self, 20, 30, -50, MIDDLE_Y - 30))
+        self.ships.append(Ship(self, 20, 30, -60, MIDDLE_Y + 30))
 
     def update(self):
         for ship in self.ships:
@@ -63,7 +58,7 @@ class Game:
             self.update()
             self.draw()
             lose = len(self.ships) == 0
-            win = self.ships[-1].x > self.WIDTH
+            win = self.ships[-1].x > WIDTH
             if lose or win:
                 running = False
 
