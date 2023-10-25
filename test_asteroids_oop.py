@@ -4,7 +4,8 @@ import math
 
 
 class Asteroid:
-    def __init__(self, center, mu, sigma, maxr, num_points):
+    def __init__(self, space, center, mu, sigma, maxr, num_points):
+        self.space = space
         self.center = center
         self.mu = mu
         self.sigma = sigma
@@ -28,47 +29,76 @@ class Asteroid:
             points.append([x, y])
         return points
 
+    def update(self):
+        pass
+
+    def draw(self):
+        pg.draw.polygon(self.space.game.screen, 'darkgray', self.points, 1)
+
+
+class Space:
+    def __init__(self, game, asteroids_number=50, asteroids_sizes=(5,25), asteroid_vertices=(5,15)):
+        self.game = game
+        self.asteroids = []
+        self.asteroids_number = asteroids_number
+        self.asteroids_sizes = asteroids_sizes
+        self.asteroid_vertices = asteroid_vertices
+
+    def generate_asteroids(self):
+        for _ in range(self.asteroids_number):
+            x = random.randint(0, self.game.screen_res[0])
+            y = random.randint(0, self.game.screen_res[1])
+            size = random.randint(*self.asteroids_sizes)
+            vertices = random.randint(*self.asteroid_vertices)
+            asteroid = Asteroid(self, (x, y), size, size / 4, size * 2, vertices)
+            self.asteroids.append(asteroid)
+
+    def update(self):
+        for asteroid in self.asteroids:
+            asteroid.update()
+
+    def draw(self):
+        for asteroid in self.asteroids:
+            asteroid.draw()
+
 
 class Game:
-    def __init__(self, screen_res, asteroids_number, asteroids_sizes, fps):
+    def __init__(self, screen_res, fps):
         pg.init()
         self.screen_res = screen_res
         self.screen = pg.display.set_mode(self.screen_res)
         pg.display.set_caption("Asteroids")
         self.clock = pg.time.Clock()
         self.running = True
-        self.asteroids = []
-        self.asteroids_number = asteroids_number
-        self.asteroids_sizes = asteroids_sizes
-        for _ in range(self.asteroids_number):
-            x = random.randint(0, self.screen_res[0])
-            y = random.randint(0, self.screen_res[1])
-            size = random.randint(*self.asteroids_sizes)
-            asteroid = Asteroid((x, y), size, size / 4, size * 2, random.randint(5, 15))
-            self.asteroids.append(asteroid)
         self.fps = fps
+
+        self.space = Space(self)
+        self.space.generate_asteroids()
+
+    def check_events(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.running = False
+
+    def update(self):
+        self.space.update()
+        self.clock.tick(self.fps)
+
+    def draw(self):
+        self.screen.fill('black')
+        self.space.draw()
+        pg.display.flip()
 
     def run(self):
         while self.running:
-            for event in pg.event.get():
-                if event.type == pg.QUIT:
-                    self.running = False
-
-            self.screen.fill('black')
-
-            for asteroid in self.asteroids:
-                pg.draw.polygon(self.screen, 'darkgray', asteroid.points, 1)
-
-            pg.display.flip()
-            self.clock.tick(self.fps)
-
+            self.check_events()
+            self.update()
+            self.draw()
         pg.quit()
 
 
 if __name__ == '__main__':
     SCREEN_RES = SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-    ASTEROIDS_NUMBER = 50
-    ASTEROIDS_SIZES = 5, 25
     FPS = 60
-    game = Game(SCREEN_RES, ASTEROIDS_NUMBER, ASTEROIDS_SIZES, FPS)
+    game = Game(SCREEN_RES, FPS)
     game.run()
