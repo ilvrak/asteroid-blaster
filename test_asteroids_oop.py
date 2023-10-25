@@ -12,6 +12,7 @@ class Asteroid:
         self.maxr = maxr
         self.num_points = num_points
         self.points = self.generate_polygon()
+        self.mask = self.generate_mask()
 
     def generate_polygon(self):
         def linspace(start, stop, num_steps):
@@ -29,11 +30,18 @@ class Asteroid:
             points.append([x, y])
         return points
 
+    def generate_mask(self):
+        mask_surface = pg.Surface((self.maxr*2, self.maxr*2), pg.SRCALPHA)
+        pg.draw.polygon(mask_surface, (255, 255, 255), self.points)
+        mask_surface.fill((255, 255, 255))
+        mask_surface.set_colorkey((255, 255, 255))
+        return pg.mask.from_surface(mask_surface)
+
     def update(self):
         pass
 
     def draw(self):
-        pg.draw.polygon(self.space.game.screen, 'darkgray', self.points, 1)
+        pg.draw.polygon(self.space.game.screen, (35, 35, 35), self.points, 1)
 
 
 class Space:
