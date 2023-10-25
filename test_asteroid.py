@@ -1,10 +1,12 @@
-import pygame
+import pygame as pg
 import random
 import math
 
 
+SCREEN_RES = SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 ASTEROIDS_NUMBER = 50
 ASTEROIDS_SIZES = 5, 25
+FPS = 60
 
 
 def linspace(start, stop, num_steps):
@@ -28,36 +30,34 @@ def generate_polygon(center, mu, sigma, maxr, num_points):
     return points
 
 
-pygame.init()
+pg.init()
 
-screen_width = 640
-screen_height = 480
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Asteroids")
+screen = pg.display.set_mode(SCREEN_RES)
+pg.display.set_caption("Asteroids")
 
-polygons = []
+asteroids = []
 
 for i in range(ASTEROIDS_NUMBER):
-    x = random.randint(0, screen_width)
-    y = random.randint(0, screen_height)
+    x = random.randint(0, SCREEN_WIDTH)
+    y = random.randint(0, SCREEN_HEIGHT)
     size = random.randint(*ASTEROIDS_SIZES)
-    polygon = generate_polygon((x, y), size, size / 4, size * 2, random.randint(5, 15))
-    polygons.append(polygon)
+    asteroid = generate_polygon((x, y), size, size / 4, size * 2, random.randint(5, 15))
+    asteroids.append(asteroid)
 
-clock = pygame.time.Clock()
+clock = pg.time.Clock()
 
 running = True
 while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
             running = False
 
-    screen.fill((0, 0, 0))
+    screen.fill('black')
 
-    for polygon in polygons:
-        pygame.draw.polygon(screen, 'darkgray', polygon, 1)
+    for asteroid in asteroids:
+        pg.draw.polygon(screen, 'darkgray', asteroid, 1)
 
-    pygame.display.flip()
-    clock.tick(60)
+    pg.display.flip()
+    clock.tick(FPS)
 
-pygame.quit()
+pg.quit()

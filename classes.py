@@ -1,4 +1,4 @@
-from settings import MIDDLE_Y, WIDTH, HEIGHT
+from settings import MIDDLE_Y, SCREEN_WIDTH, SCREEN_HEIGHT
 
 import math
 import random
@@ -24,7 +24,7 @@ class Ship:
 
     def update(self):
         self.x += self.move_increment
-        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * HEIGHT // 8
+        self.y = self.initial_y - math.sin(self.frequency * math.radians(self.x)) * SCREEN_HEIGHT // 8
         self.back = (self.x, self.y)
         self.nose = (self.x + self.length, self.y)
         self.left_wing = (self.x, self.y - self.width // 2)
@@ -104,24 +104,20 @@ class Asteroid:
         self.radius
         pass
 
-    @classmethod
-    def generate(cls, num_asteroids, radius_range=(3, 10)):
-        asteroids = []
-        for _ in range(num_asteroids):
-            asteroid_radius = random.randint(*radius_range)
-            asteroid_x = random.randint(0, WIDTH)
-            asteroid_y = random.randint(0, HEIGHT)
-            asteroid = cls(asteroid_x, asteroid_y, asteroid_radius)
-            asteroids.append(asteroid)
-        return asteroids
-
 
 class Space:
     def __init__(self, game):
         self.game = game
 
-    def is_game_over(self):
-        pass
+    def generate_asteroids(cls, num_asteroids, radius_range=(3, 10)):
+        asteroids = []
+        for _ in range(num_asteroids):
+            asteroid_radius = random.randint(*radius_range)
+            asteroid_x = random.randint(0, SCREEN_WIDTH)
+            asteroid_y = random.randint(0, SCREEN_HEIGHT)
+            asteroid = cls(asteroid_x, asteroid_y, asteroid_radius)
+            asteroids.append(asteroid)
+        return asteroids
 
     def update(self):
         pass

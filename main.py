@@ -1,10 +1,9 @@
 import sys
 
 import pygame as pg
-import pygame.freetype as ft
 
 from classes import Ship, Asteroid
-from settings import RES, FONT_SIZE, MIDDLE_Y, WIDTH
+from settings import SCREEN_RES, MIDDLE_Y, SCREEN_WIDTH
 
 
 # Game - (Space - (Asteroids - (Asteroid), Ships - (Ship - (Laser, Battery))), Menu)
@@ -15,9 +14,8 @@ class Game:
         pg.init()
         pg.display.set_caption("Asteroid Blaster")
 
-        self.screen = pg.display.set_mode(RES)
+        self.screen = pg.display.set_mode(SCREEN_RES)
         self.clock = pg.time.Clock()
-        self.font = ft.SysFont('Verdana', FONT_SIZE)
 
         self.new_game()
 
@@ -47,6 +45,9 @@ class Game:
         for asteroid in self.asteroids:
             asteroid.draw()
 
+    def is_game_over(self):
+        pass
+
     def check_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -61,7 +62,7 @@ class Game:
             self.update()
             self.draw()
             lose = len(self.ships) == 0
-            win = self.ships[-1].x > WIDTH
+            win = self.ships[-1].x > SCREEN_WIDTH
             if lose or win:
                 running = False
 
