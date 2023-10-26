@@ -98,7 +98,7 @@ class Asteroid:
 
     def draw(self):
         pg.draw.circle(self.game.screen, self.color, (self.x, self.y), self.radius, 1)
-        # pg.draw.rect(screen, 'magenta', self.rect, 1)
+        # pg.draw.rect(self.game.screen, 'magenta', self.rect, 1)
 
     def hitted(self):
         self.radius
