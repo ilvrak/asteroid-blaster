@@ -4,7 +4,17 @@ import math
 import sys
 
 
+class AsteroidBuilder:
+    # create points array
+    def __init__(self):
+        self.linspace = None
+
+    def gen_linspace(self):
+        pass
+
+
 class Asteroid(pg.sprite.Sprite):
+    # position, size
     def __init__(self, space, center, mu, sigma, radius, num_points):
         super().__init__()
         self.space = space
