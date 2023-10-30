@@ -51,13 +51,14 @@ class Asteroid(pg.sprite.Sprite):
         print(polygon)
         return polygon
 
-    def split(self):
-        new_size = self.size // 2
-        new_position1 = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
-        new_position2 = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
-        shatter1 = Asteroid(self.space, new_position1, new_size)
-        shatter2 = Asteroid(self.space, new_position2, new_size)
-        return [shatter1, shatter2]
+    def split(self, num_shatters):
+        new_size = self.size // 1.8
+        shatters = []
+        for _ in range(num_shatters):
+            new_position = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
+            shatter = Asteroid(self.space, new_position, new_size)
+            shatters.append(shatter)
+        return shatters
 
     def update(self):
         pass
@@ -108,19 +109,23 @@ class Mouse(pg.sprite.Sprite):
         if pg.sprite.spritecollide(self, self.space.asteroids, False):
             self.collide = 'Collided Rects!'
             self.color = 'blue'
-            if collides := pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask):
+            self.collides = pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask)
+            if self.collides:
                 self.collide = 'Collided Masks!'
                 self.color = 'red'
-                self.space.splash(collides[0].position)
-                if collides[0].size < 4:
-                    collides[0].kill()
-                    return
-                new_asteroids = collides[0].split()
-                self.space.asteroids.remove(collides[0])
-                self.space.asteroids.add(*new_asteroids)
         else:
             self.collide = 'Not Collided...'
             self.color = 'green'
+
+    def shoot(self):
+        if self.collides:
+            self.space.splash(self.collides[0].position)
+            if self.collides[0].size < 4:
+                self.collides[0].kill()
+                return
+            new_asteroids = self.collides[0].split(2)
+            self.space.asteroids.remove(self.collides[0])
+            self.space.asteroids.add(*new_asteroids)
 
     def update(self):
         self.position = pg.mouse.get_pos()
@@ -213,6 +218,8 @@ class Game:
                     self.space.show_objects = not self.space.show_objects
                 if event.key == pg.K_t:
                     self.space.print_collides = not self.space.print_collides
+            elif event.type == pg.MOUSEBUTTONDOWN:
+                self.space.mouse.shoot()
 
     def update(self):
         self.space.update()
