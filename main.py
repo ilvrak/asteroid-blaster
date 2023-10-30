@@ -2,7 +2,7 @@ import sys
 
 import pygame as pg
 
-from classes import Ship, Asteroid
+from classes import Space, Ship, Asteroid
 from settings import SCREEN_RES, MIDDLE_Y, SCREEN_WIDTH
 
 
@@ -10,16 +10,15 @@ from settings import SCREEN_RES, MIDDLE_Y, SCREEN_WIDTH
 
 class Game:
     def __init__(self):
-
         pg.init()
         pg.display.set_caption("Asteroid Blaster")
-
         self.screen = pg.display.set_mode(SCREEN_RES)
         self.clock = pg.time.Clock()
 
         self.new_game()
 
     def new_game(self):
+        self.space = Space(self)
         # Генерация астероидов
         self.asteroids = Asteroid.generate(200)
 
