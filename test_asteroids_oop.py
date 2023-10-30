@@ -4,78 +4,57 @@ import math
 import sys
 
 
-class AsteroidBuilder:
-    # create points array
-    def __init__(self):
-        self.linspace = None
-
-    def gen_linspace(self):
-        pass
-
-
 class Asteroid(pg.sprite.Sprite):
-    # position, size
-    def __init__(self, space, center, mu, sigma, radius, num_points):
+    def __init__(self, space, center):
         super().__init__()
         self.space = space
 
         self.center = center
-        self.x = center[0]
-        self.y = center[1]
-        self.mu = mu
-        self.sigma = sigma
-        self.radius = radius
-        self.num_points = num_points
-        self.points = self.generate_polygon()
-        self.rect = pg.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
-
-        self.image = pg.Surface((self.radius * 2, self.radius * 2), pg.SRCALPHA)
-        self.image.fill('black')
-        pg.draw.polygon(self.image, 'white', self.points)  # проблема здесь, координаты не подходят для этой поверхности
-        self.image.set_colorkey('white')
-        # self.rect = self.image.get_rect()
+        self.points = self.build_polygon()
+        min_x, min_y = map(min, zip(*self.points))
+        max_x, max_y = map(max, zip(*self.points))
+        width = max_x - min_x + 3
+        height = max_y - min_y + 3
+        self.image = pg.Surface((width, height), pg.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.center = center
+        self.rect.width = width
+        self.rect.height = height
+        pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points])
         self.mask = pg.mask.from_surface(self.image)
         self.mask_image = self.mask.to_surface()
+        self.image.fill(pg.SRCALPHA)
+        pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points], 1)
 
-    def generate_polygon(self):
-        def linspace(start, stop, num_steps):
-            values = []
-            delta = (stop - start) / num_steps
-            for i in range(num_steps):
-                values.append(start + i * delta)
-            return values
+    def build_polygon(self):
+        mean = random.randint(30, 30)
+        deviation = mean / 4
+        radius = mean * 2
+        vertices = random.randint(5, 15)
+        angles = [i * 2 * math.pi / vertices for i in range(vertices)]
 
-        points = []
-        for theta in linspace(0, 2 * math.pi - (2 * math.pi / self.num_points), self.num_points):
-            point_radius = min(random.gauss(self.mu, self.sigma), self.radius)
-            x = self.center[0] + point_radius * math.cos(theta)
-            y = self.center[1] + point_radius * math.sin(theta)
-            points.append([x, y])
-        return points
-
-    # def get_rect(self):
-    #     return pg.Rect(self.x - self.radius, self.y - self.radius, self.radius * 2, self.radius * 2)
-
-    # def get_mask(self):
-    #     mask_surface = pg.Surface((self.radius * 2, self.radius * 2), pg.SRCALPHA)
-    #     pg.draw.polygon(mask_surface, (255, 255, 255), self.points)
-    #     mask_surface.fill((255, 255, 255))
-    #     mask_surface.set_colorkey((255, 255, 255))
-    #     return pg.mask.from_surface(mask_surface)
+        polygon = []
+        for angle in angles:
+            rib_radius = min(random.gauss(mean, deviation), radius)
+            x = self.center[0] + rib_radius * math.cos(angle)
+            y = self.center[1] + rib_radius * math.sin(angle)
+            polygon.append( (int(x), int(y)) )
+        print(polygon)
+        return polygon
 
     def update(self):
         pass
+        # self.mask = pg.mask.from_surface(self.image)
+        # self.mask_image = self.mask.to_surface()
 
     def draw(self):
         if self.space.show_collide_rects:
-            pg.draw.rect(self.space.game.screen, 'orchid4', self.rect, 1)
+            pg.draw.rect(self.space.game.screen, 'darkmagenta', self.rect, 1)
         if self.space.show_collide_masks:
             self.space.game.screen.blit(self.mask_image, self.rect)
         if self.space.show_objects:
-            pg.draw.polygon(self.space.game.screen, 'darkgray', self.points, 1)
-
-    def kill(self):
-        pass
+            # pg.draw.polygon(self.space.game.screen, 'darkgray', self.points, 1)
+            self.space.game.screen.blit(self.image, self.rect)
 
 
 class Mouse(pg.sprite.Sprite):
@@ -87,23 +66,30 @@ class Mouse(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.color = 'red'
         self.mask = pg.mask.from_surface(self.image)
-        self.mask_image = self.mask.to_surface()
+
+    def check_collision(self):
+        if pg.sprite.spritecollide(self, self.space.asteroids, False):
+            self.color = 'blue'
+            if pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask):
+                self.color = 'red'
+        else:
+            self.color = 'green'
 
     def update(self):
         self.position = pg.mouse.get_pos()
         self.rect.topleft = self.position
+        self.check_collision()
         self.mask = pg.mask.from_surface(self.image)
         self.mask_image = self.mask.to_surface()
 
     def draw(self):
         if self.space.show_collide_rects:
-            pg.draw.rect(self.space.game.screen, 'magenta', self.rect, 1)
+            pg.draw.rect(self.space.game.screen, 'darkmagenta', self.rect, 1)
         if self.space.show_collide_masks:
-            self.space.game.screen.blit(self.mask_image, self.position)
+            self.space.game.screen.blit(self.mask_image, self.rect)
         if self.space.show_objects:
             self.space.game.screen.blit(self.image, self.position)
             self.image.fill(self.color)
-            pg.draw.circle(self.image, 'white', (5, 5), 3, 1)
 
 
 class Space:
@@ -115,34 +101,25 @@ class Space:
         self.show_collide_masks = False
         self.show_objects = True
 
-    def generate_asteroids(self, asteroids_number=100, asteroids_sizes=(3, 10), asteroid_vertices=(5, 15)):
-        asteroids = []
+    def generate_asteroids(self, asteroids_number=20):
+        asteroids = pg.sprite.Group()
         for _ in range(asteroids_number):
             x = random.randint(0, self.game.screen_res[0])
             y = random.randint(0, self.game.screen_res[1])
-            size = random.randint(*asteroids_sizes)
-            vertices = random.randint(*asteroid_vertices)
-            asteroid = Asteroid(self, (x, y), size, size / 4, size * 2, vertices)
-            asteroids.append(asteroid)
+            asteroids.add(Asteroid(self, (x, y)))
         return asteroids
 
-    def check_collision(self):
-        collision_index = self.mouse.rect.collidelist([asteroid.rect for asteroid in self.asteroids])
-        if collision_index == -1:
-            self.mouse.color = 'green'
-        else:
-            self.mouse.color = 'red'
-
     def update(self):
-        self.check_collision()
+        self.asteroids.update()
+        # for asteroid in self.asteroids:
+        #     asteroid.update()
         self.mouse.update()
-        for asteroid in self.asteroids:
-            asteroid.update()
 
     def draw(self):
-        self.mouse.draw()
+        # self.asteroids.draw()
         for asteroid in self.asteroids:
             asteroid.draw()
+        self.mouse.draw()
 
 
 class Level:
