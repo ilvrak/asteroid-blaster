@@ -4,20 +4,28 @@ import math
 import sys
 
 
+class Entity(pg.sprite.Sprite):
+    def __init__(self, groups, image=pg.Surface((0,0), pg.SRCALPHA), position=(0,0)):
+        super().__init__(groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=position)
+
+
 class Asteroid(pg.sprite.Sprite):
-    def __init__(self, space, center):
+    def __init__(self, space, position=(0,0), size=4):
         super().__init__()
         self.space = space
 
-        self.center = center
-        self.points = self.build_polygon()
+        self.position = position
+        self.size = size
+        self.points = self.build_polygon(self.size)
         min_x, min_y = map(min, zip(*self.points))
         max_x, max_y = map(max, zip(*self.points))
         width = max_x - min_x + 3
         height = max_y - min_y + 3
         self.image = pg.Surface((width, height), pg.SRCALPHA)
         self.rect = self.image.get_rect()
-        self.rect.center = center
+        self.rect.center = position
         self.rect.width = width
         self.rect.height = height
         pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points])
@@ -26,8 +34,9 @@ class Asteroid(pg.sprite.Sprite):
         self.image.fill(pg.SRCALPHA)
         pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points], 1)
 
-    def build_polygon(self):
-        mean = random.randint(30, 30)
+        self.velocity = pg.math.Vector2()
+
+    def build_polygon(self, mean) -> list[tuple[int]]:
         deviation = mean / 4
         radius = mean * 2
         vertices = random.randint(5, 15)
@@ -36,11 +45,19 @@ class Asteroid(pg.sprite.Sprite):
         polygon = []
         for angle in angles:
             rib_radius = min(random.gauss(mean, deviation), radius)
-            x = self.center[0] + rib_radius * math.cos(angle)
-            y = self.center[1] + rib_radius * math.sin(angle)
+            x = self.position[0] + rib_radius * math.cos(angle)
+            y = self.position[1] + rib_radius * math.sin(angle)
             polygon.append( (int(x), int(y)) )
         print(polygon)
         return polygon
+
+    def split(self):
+        new_size = self.size // 2
+        new_position1 = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
+        new_position2 = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
+        shatter1 = Asteroid(self.space, new_position1, new_size)
+        shatter2 = Asteroid(self.space, new_position2, new_size)
+        return [shatter1, shatter2]
 
     def update(self):
         pass
@@ -57,6 +74,26 @@ class Asteroid(pg.sprite.Sprite):
             self.space.game.screen.blit(self.image, self.rect)
 
 
+class Particle(pg.sprite.Sprite):
+    def __init__(self, space, pos):
+        super().__init__()
+        self.space = space
+        self.image = pg.Surface((1, 1))
+        self.image.fill('white')
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+        self.vel_x = random.randint(-5, 5)
+        self.vel_y = random.randint(-5, 5)
+        self.life = 10
+
+    def update(self):
+        self.rect.x += self.vel_x
+        self.rect.y += self.vel_y
+        self.life -= 1
+        if self.life <= 0:
+            self.kill()
+
+
 class Mouse(pg.sprite.Sprite):
     def __init__(self, space):
         super().__init__()
@@ -69,10 +106,20 @@ class Mouse(pg.sprite.Sprite):
 
     def check_collision(self):
         if pg.sprite.spritecollide(self, self.space.asteroids, False):
+            self.collide = 'Collided Rects!'
             self.color = 'blue'
-            if pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask):
+            if collides := pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask):
+                self.collide = 'Collided Masks!'
                 self.color = 'red'
+                self.space.splash(collides[0].position)
+                if collides[0].size < 4:
+                    collides[0].kill()
+                    return
+                new_asteroids = collides[0].split()
+                self.space.asteroids.remove(collides[0])
+                self.space.asteroids.add(*new_asteroids)
         else:
+            self.collide = 'Not Collided...'
             self.color = 'green'
 
     def update(self):
@@ -90,35 +137,48 @@ class Mouse(pg.sprite.Sprite):
         if self.space.show_objects:
             self.space.game.screen.blit(self.image, self.position)
             self.image.fill(self.color)
+        if self.space.print_collides:
+            print(self.collide)
 
 
 class Space:
     def __init__(self, game):
         self.game = game
         self.mouse = Mouse(self)
-        self.asteroids = self.generate_asteroids()
+        self.asteroids = self.generate_asteroids(20)
+        self.particles = pg.sprite.Group()
+        self.sprites = pg.sprite.Group()
+        self.entity = Entity([self.sprites])
         self.show_collide_rects = False
         self.show_collide_masks = False
+        self.print_collides = False
         self.show_objects = True
 
-    def generate_asteroids(self, asteroids_number=20):
+    def generate_asteroids(self, asteroids_number=20) -> pg.sprite.Group:
         asteroids = pg.sprite.Group()
         for _ in range(asteroids_number):
             x = random.randint(0, self.game.screen_res[0])
             y = random.randint(0, self.game.screen_res[1])
-            asteroids.add(Asteroid(self, (x, y)))
+            size = random.randint(30, 30)
+            asteroids.add(Asteroid(self, (x, y), size))
         return asteroids
+
+    def splash(self, epicenter):
+        self.particles.add(*[Particle(self, epicenter) for _ in range(10)])
 
     def update(self):
         self.asteroids.update()
+        self.particles.update()
         # for asteroid in self.asteroids:
         #     asteroid.update()
         self.mouse.update()
 
     def draw(self):
-        # self.asteroids.draw()
+        self.game.screen.fill('black')
+        # self.sprites.draw(self.game.screen)
         for asteroid in self.asteroids:
             asteroid.draw()
+        self.particles.draw(self.game.screen)
         self.mouse.draw()
 
 
@@ -134,10 +194,11 @@ class Game:
         self.screen = pg.display.set_mode(self.screen_res)
         pg.display.set_caption("Asteroids")
         self.clock = pg.time.Clock()
-        self.running = True
         self.fps = fps
-        pg.mouse.set_visible(False)
+
         self.space = Space(self)
+        pg.mouse.set_visible(False)
+        self.running = True
 
     def check_events(self):
         for event in pg.event.get():
@@ -150,15 +211,16 @@ class Game:
                     self.space.show_collide_masks = not self.space.show_collide_masks
                 if event.key == pg.K_o:
                     self.space.show_objects = not self.space.show_objects
+                if event.key == pg.K_t:
+                    self.space.print_collides = not self.space.print_collides
 
     def update(self):
         self.space.update()
+        pg.display.update()
         self.clock.tick(self.fps)
 
     def draw(self):
-        self.screen.fill('black')
         self.space.draw()
-        pg.display.flip()
 
     def run(self):
         while self.running:
