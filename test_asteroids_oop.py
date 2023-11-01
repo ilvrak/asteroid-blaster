@@ -5,14 +5,14 @@ import sys
 
 
 class Entity(pg.sprite.Sprite):
-    def __init__(self, groups, image=pg.Surface((0,0), pg.SRCALPHA), position=(0,0)):
+    def __init__(self, groups, image=pg.Surface((0, 0), pg.SRCALPHA), position=(0, 0)):
         super().__init__(groups)
         self.image = image
         self.rect = self.image.get_rect(topleft=position)
 
 
 class Asteroid(pg.sprite.Sprite):
-    def __init__(self, space, position=(0,0), size=4):
+    def __init__(self, space, position=(0, 0), size=4):
         super().__init__()
         self.space = space
 
@@ -47,15 +47,17 @@ class Asteroid(pg.sprite.Sprite):
             rib_radius = min(random.gauss(mean, deviation), radius)
             x = self.position[0] + rib_radius * math.cos(angle)
             y = self.position[1] + rib_radius * math.sin(angle)
-            polygon.append( (int(x), int(y)) )
+            polygon.append((int(x), int(y)))
         print(polygon)
         return polygon
 
     def split(self, num_shatters):
         new_size = self.size // 1.8
+        appear_zone = (-self.size * 2, self.size * 2)
+
         shatters = []
         for _ in range(num_shatters):
-            new_position = (self.position[0] + random.randint(-self.size*2, self.size*2), self.position[1] + random.randint(-self.size*2, self.size*2))
+            new_position = (self.position[0] + random.randint(*appear_zone), self.position[1] + random.randint(*appear_zone))
             shatter = Asteroid(self.space, new_position, new_size)
             shatters.append(shatter)
         return shatters
@@ -147,8 +149,11 @@ class Mouse(pg.sprite.Sprite):
 
 
 class Space:
+    # it is Level
+    # contains all sprites (player, enemies, map...) also deals with their interactions
     def __init__(self, game):
         self.game = game
+        self.display_surface = pg.display.get_surface()
         self.mouse = Mouse(self)
         self.asteroids = self.generate_asteroids(20)
         self.particles = pg.sprite.Group()
@@ -171,6 +176,10 @@ class Space:
     def splash(self, epicenter):
         self.particles.add(*[Particle(self, epicenter) for _ in range(10)])
 
+    def run(self):
+        # run each level
+        pass
+
     def update(self):
         self.asteroids.update()
         self.particles.update()
@@ -179,17 +188,12 @@ class Space:
         self.mouse.update()
 
     def draw(self):
-        self.game.screen.fill('black')
+        self.display_surface.fill('black')
         # self.sprites.draw(self.game.screen)
         for asteroid in self.asteroids:
             asteroid.draw()
-        self.particles.draw(self.game.screen)
+        self.particles.draw(self.display_surface)
         self.mouse.draw()
-
-
-class Level:
-    def __init__(self):
-        pass
 
 
 class Game:
@@ -230,6 +234,7 @@ class Game:
         self.space.draw()
 
     def run(self):
+        # run whole game
         while self.running:
             self.check_events()
             self.update()
