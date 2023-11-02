@@ -1,7 +1,8 @@
-import pygame as pg
-import random
 import math
+import random
 import sys
+
+import pygame as pg
 
 
 class Entity(pg.sprite.Sprite):
@@ -12,8 +13,8 @@ class Entity(pg.sprite.Sprite):
 
 
 class Asteroid(pg.sprite.Sprite):
-    def __init__(self, space, position=(0, 0), size=4):
-        super().__init__()
+    def __init__(self, groups, space, position=(0, 0), size=4):
+        super().__init__(groups)
         self.space = space
 
         self.position = position
@@ -58,7 +59,7 @@ class Asteroid(pg.sprite.Sprite):
         shatters = []
         for _ in range(num_shatters):
             new_position = (self.position[0] + random.randint(*appear_zone), self.position[1] + random.randint(*appear_zone))
-            shatter = Asteroid(self.space, new_position, new_size)
+            shatter = Asteroid([self.space.sprites], self.space, new_position, new_size)
             shatters.append(shatter)
         return shatters
 
@@ -78,8 +79,8 @@ class Asteroid(pg.sprite.Sprite):
 
 
 class Particle(pg.sprite.Sprite):
-    def __init__(self, space, pos):
-        super().__init__()
+    def __init__(self, groups, space, pos):
+        super().__init__(groups)
         self.space = space
         self.image = pg.Surface((1, 1))
         self.image.fill('white')
@@ -98,8 +99,8 @@ class Particle(pg.sprite.Sprite):
 
 
 class Mouse(pg.sprite.Sprite):
-    def __init__(self, space):
-        super().__init__()
+    def __init__(self, groups, space):
+        super().__init__(groups)
         self.space = space
         self.position = pg.mouse.get_pos()
         self.image = pg.Surface((10, 10))
@@ -154,11 +155,11 @@ class Space:
     def __init__(self, game):
         self.game = game
         self.display_surface = pg.display.get_surface()
-        self.mouse = Mouse(self)
-        self.asteroids = self.generate_asteroids(20)
         self.particles = pg.sprite.Group()
         self.sprites = pg.sprite.Group()
         self.entity = Entity([self.sprites])
+        self.mouse = Mouse([self.sprites], self)
+        self.asteroids = self.generate_asteroids(20)
         self.show_collide_rects = False
         self.show_collide_masks = False
         self.print_collides = False
@@ -170,26 +171,26 @@ class Space:
             x = random.randint(0, self.game.screen_res[0])
             y = random.randint(0, self.game.screen_res[1])
             size = random.randint(30, 30)
-            asteroids.add(Asteroid(self, (x, y), size))
+            asteroids.add(Asteroid([self.sprites], self, (x, y), size))
         return asteroids
 
     def splash(self, epicenter):
-        self.particles.add(*[Particle(self, epicenter) for _ in range(10)])
+        self.particles.add(*[Particle([self.particles], self, epicenter) for _ in range(10)])
 
     def run(self):
         # run each level
         pass
 
     def update(self):
-        self.asteroids.update()
+        self.sprites.update()
         self.particles.update()
         # for asteroid in self.asteroids:
         #     asteroid.update()
-        self.mouse.update()
+        # self.mouse.update()
 
     def draw(self):
         self.display_surface.fill('black')
-        # self.sprites.draw(self.game.screen)
+        # self.sprites.draw(self.display_surface)
         for asteroid in self.asteroids:
             asteroid.draw()
         self.particles.draw(self.display_surface)
