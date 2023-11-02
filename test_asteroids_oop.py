@@ -52,7 +52,7 @@ class Asteroid(pg.sprite.Sprite):
         return polygon
 
     def split(self, num_shatters):
-        new_size = self.size // 1.8
+        new_size = int(self.size / 1.8)
         appear_zone = (-self.size * 2, self.size * 2)
 
         shatters = []
