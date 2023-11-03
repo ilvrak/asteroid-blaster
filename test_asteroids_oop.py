@@ -29,15 +29,15 @@ class Asteroid(pg.sprite.Sprite):
         self.rect.center = position
         self.rect.width = width
         self.rect.height = height
-        pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points])
+        pg.draw.polygon(self.image, "darkgray", [(x - min_x + 1, y - min_y + 1) for x, y in self.points])
         self.mask = pg.mask.from_surface(self.image)
         self.mask_image = self.mask.to_surface()
         self.image.fill(pg.SRCALPHA)
-        pg.draw.polygon(self.image, 'darkgray', [(x - min_x + 1, y - min_y + 1) for x, y in self.points], 1)
+        pg.draw.polygon(self.image, "darkgray", [(x - min_x + 1, y - min_y + 1) for x, y in self.points], 1)
 
         self.velocity = pg.math.Vector2()
 
-    def build_polygon(self, mean) -> list[tuple[int]]:
+    def build_polygon(self, mean) -> list[tuple[int, int]]:
         deviation = mean / 4
         radius = mean * 2
         vertices = random.randint(5, 15)
@@ -70,7 +70,7 @@ class Asteroid(pg.sprite.Sprite):
 
     def draw(self):
         if self.space.show_collide_rects:
-            pg.draw.rect(self.space.game.screen, 'darkmagenta', self.rect, 1)
+            pg.draw.rect(self.space.game.screen, "darkmagenta", self.rect, 1)
         if self.space.show_collide_masks:
             self.space.game.screen.blit(self.mask_image, self.rect)
         if self.space.show_objects:
@@ -83,7 +83,7 @@ class Particle(pg.sprite.Sprite):
         super().__init__(groups)
         self.space = space
         self.image = pg.Surface((1, 1))
-        self.image.fill('white')
+        self.image.fill("white")
         self.rect = self.image.get_rect()
         self.rect.center = pos
         self.vel_x = random.randint(-5, 5)
@@ -105,20 +105,20 @@ class Mouse(pg.sprite.Sprite):
         self.position = pg.mouse.get_pos()
         self.image = pg.Surface((10, 10))
         self.rect = self.image.get_rect()
-        self.color = 'red'
+        self.color = "red"
         self.mask = pg.mask.from_surface(self.image)
 
     def check_collision(self):
         if pg.sprite.spritecollide(self, self.space.asteroids, False):
-            self.collide = 'Collided Rects!'
-            self.color = 'blue'
+            self.collide = "Collided Rects!"
+            self.color = "blue"
             self.collides = pg.sprite.spritecollide(self, self.space.asteroids, False, pg.sprite.collide_mask)
             if self.collides:
-                self.collide = 'Collided Masks!'
-                self.color = 'red'
+                self.collide = "Collided Masks!"
+                self.color = "red"
         else:
-            self.collide = 'Not Collided...'
-            self.color = 'green'
+            self.collide = "Not Collided..."
+            self.color = "green"
 
     def shoot(self):
         if self.collides:
@@ -139,7 +139,7 @@ class Mouse(pg.sprite.Sprite):
 
     def draw(self):
         if self.space.show_collide_rects:
-            pg.draw.rect(self.space.game.screen, 'darkmagenta', self.rect, 1)
+            pg.draw.rect(self.space.game.screen, "darkmagenta", self.rect, 1)
         if self.space.show_collide_masks:
             self.space.game.screen.blit(self.mask_image, self.rect)
         if self.space.show_objects:
@@ -189,7 +189,7 @@ class Space:
         # self.mouse.update()
 
     def draw(self):
-        self.display_surface.fill('black')
+        self.display_surface.fill("black")
         # self.sprites.draw(self.display_surface)
         for asteroid in self.asteroids:
             asteroid.draw()
@@ -247,7 +247,7 @@ class Game:
         sys.exit()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     SCREEN_RES = SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
     FPS = 60
     game = Game(SCREEN_RES, FPS)
