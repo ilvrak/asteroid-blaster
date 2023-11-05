@@ -37,6 +37,7 @@ class Asteroid(pg.sprite.Sprite):
 
         self.velocity = pg.math.Vector2()
 
+    # TODO refactor this
     def build_polygon(self, mean) -> list[tuple[int, int]]:
         deviation = mean / 4
         radius = mean * 2
@@ -109,6 +110,7 @@ class Mouse(pg.sprite.Sprite):
         self.mask = pg.mask.from_surface(self.image)
 
     def check_collision(self):
+        self.collides = None
         if pg.sprite.spritecollide(self, self.space.asteroids, False):
             self.collide = "Collided Rects!"
             self.color = "blue"
@@ -120,6 +122,7 @@ class Mouse(pg.sprite.Sprite):
             self.collide = "Not Collided..."
             self.color = "green"
 
+    # TODO refactor this
     def shoot(self):
         if self.collides:
             self.space.splash(self.collides[0].position)
@@ -215,14 +218,15 @@ class Game:
             if event.type == pg.QUIT:
                 self.running = False
             elif event.type == pg.KEYDOWN:
-                if event.key == pg.K_r:
-                    self.space.show_collide_rects = not self.space.show_collide_rects
-                if event.key == pg.K_m:
-                    self.space.show_collide_masks = not self.space.show_collide_masks
-                if event.key == pg.K_o:
-                    self.space.show_objects = not self.space.show_objects
-                if event.key == pg.K_t:
-                    self.space.print_collides = not self.space.print_collides
+                match event.key:
+                    case pg.K_r:
+                        self.space.show_collide_rects = not self.space.show_collide_rects
+                    case pg.K_m:
+                        self.space.show_collide_masks = not self.space.show_collide_masks
+                    case pg.K_o:
+                        self.space.show_objects = not self.space.show_objects
+                    case pg.K_t:
+                        self.space.print_collides = not self.space.print_collides
             elif event.type == pg.MOUSEBUTTONDOWN:
                 self.space.mouse.shoot()
 
