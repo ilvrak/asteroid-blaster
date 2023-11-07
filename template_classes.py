@@ -1,12 +1,9 @@
-import pygame as pg
 import sys
 
-
-SCREEN_RES = SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
-FPS = 60
+import pygame as pg
 
 
-class Some:
+class Level:
     def __init__(self):
         pass
 
@@ -18,28 +15,32 @@ class Some:
 
 
 class Game:
-    def __init__(self, screen_res, fps):
-        self.screen_res = screen_res
+    def __init__(self, caption, screen_res, fps):
         pg.init()
-        pg.display.set_caption('')
-        self.screen = pg.display.set_mode(self.screen_res)
+        self.screen = pg.display.set_mode(screen_res)
+        pg.display.set_caption(caption)
+        pg.mouse.set_visible(False)
         self.clock = pg.time.Clock()
         self.fps = fps
         self.running = True
+
+        self.level = Level()
 
     def check_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.running = False
             elif event.type == pg.KEYDOWN:
-                pass
+                ...
 
     def update(self):
-        self.clock.tick(self.fps)
+        ...
+        pg.display.flip()
+        self.dt = self.clock.tick(self.fps)
 
     def draw(self):
         self.screen.fill('black')
-        pg.display.flip()
+        ...
 
     def run(self):
         while self.running:
@@ -54,5 +55,5 @@ class Game:
 
 
 if __name__ == '__main__':
-    game = Game(SCREEN_RES, FPS)
+    game = Game('Some', (640, 480), 60)
     game.run()
