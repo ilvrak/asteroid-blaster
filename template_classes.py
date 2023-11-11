@@ -55,5 +55,5 @@ class Game:
 
 
 if __name__ == '__main__':
-    game = Game('Some', (640, 480), 60)
+    game = Game(caption='Some', screen_res=(640, 480), fps=60)
     game.run()
