@@ -3,6 +3,14 @@ import sys
 import pygame as pg
 
 
+class Entity(pg.sprite.Sprite):
+    def __init__(self, groups, image=pg.Surface((0, 0), pg.SRCALPHA), position=(0, 0)):
+        super().__init__(groups)
+        self.image = image
+        self.rect = self.image.get_rect(topleft=position)
+        ...
+
+
 class Level:
     def __init__(self):
         pass
@@ -54,6 +62,10 @@ class Game:
         sys.exit()
 
 
-if __name__ == '__main__':
+def main():
     game = Game(caption='Some', screen_res=(640, 480), fps=60)
     game.run()
+
+
+if __name__ == '__main__':
+    main()
